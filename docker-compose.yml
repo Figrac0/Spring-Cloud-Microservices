@@ -1,0 +1,17 @@
+services:
+    postgres:
+        image: postgres:16
+        container_name: unik-postgres
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: unik
+            POSTGRES_USER: unik
+            POSTGRES_PASSWORD: unik
+        ports:
+            - "5432:5432"
+        volumes:
+            - pgdata:/var/lib/postgresql/data
+            - ./db/init:/docker-entrypoint-initdb.d
+
+volumes:
+    pgdata:
