@@ -18,7 +18,7 @@ public class CompanyClient {
             return true;
         try {
             webClient.get()
-                    .uri("/companies/exists/{id}", companyId)
+                    .uri("/exists/{id}", companyId)
                     .retrieve()
                     .toBodilessEntity()
                     .block();
@@ -33,7 +33,7 @@ public class CompanyClient {
             return null;
         try {
             return webClient.get()
-                    .uri("/companies/{id}/name", companyId)
+                    .uri("/{id}/name", companyId)
                     .retrieve()
                     .bodyToMono(String.class)
                     .block();

@@ -1,17 +1,142 @@
 services:
-    postgres:
-        image: postgres:16
-        container_name: unik-postgres
-        restart: unless-stopped
-        environment:
-            POSTGRES_DB: unik
-            POSTGRES_USER: unik
-            POSTGRES_PASSWORD: unik
-        ports:
-            - "5432:5432"
-        volumes:
-            - pgdata:/var/lib/postgresql/data
-            - ./db/init:/docker-entrypoint-initdb.d
+  postgres:
+    image: postgres:16
+    container_name: unik-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: unik
+      POSTGRES_USER: unik
+      POSTGRES_PASSWORD: unik
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U unik -d unik"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - microservices-net
+
+  config-server:
+    build:
+      context: ./config-server
+    container_name: config-server
+    restart: unless-stopped
+    environment:
+      CONFIG_REPO_PATH: file:/config-repo
+    volumes:
+      - ./config-repo:/config-repo:ro
+    ports:
+      - "8888:8888"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8888/actuator/health | grep UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+    networks:
+      - microservices-net
+
+  discovery-server:
+    build:
+      context: ./discovery-server
+    container_name: discovery-server
+    restart: unless-stopped
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_INSTANCE_HOSTNAME: discovery-server
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8761/actuator/health | grep UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+    depends_on:
+      config-server:
+        condition: service_healthy
+    networks:
+      - microservices-net
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+    container_name: api-gateway
+    restart: unless-stopped
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - microservices-net
+
+  user-service:
+    build:
+      context: ./user-service
+    container_name: user-service
+    restart: unless-stopped
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      USER_DB_URL: jdbc:postgresql://postgres:5432/unik?currentSchema=user_schema
+      DB_USERNAME: unik
+      DB_PASSWORD: unik
+      COMPANY_SERVICE_BASE_URL: http://api-gateway:8080/company
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+    networks:
+      - microservices-net
+
+  company-service:
+    build:
+      context: ./company-service
+    container_name: company-service
+    restart: unless-stopped
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      COMPANY_DB_URL: jdbc:postgresql://postgres:5432/unik?currentSchema=company_schema
+      DB_USERNAME: unik
+      DB_PASSWORD: unik
+      USER_SERVICE_BASE_URL: http://api-gateway:8080/user
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+    networks:
+      - microservices-net
 
 volumes:
-    pgdata:
+  pgdata:
+
+networks:
+  microservices-net:
+    driver: bridge

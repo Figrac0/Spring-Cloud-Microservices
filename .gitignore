@@ -1,0 +1,13 @@
+# Maven local repo inside project
+**/.m2repo/
+
+# Maven build output
+**/target/
+
+# IntelliJ / VS Code / OS
+.idea/
+.vscode/
+*.iml
+
+# Logs
+*.log

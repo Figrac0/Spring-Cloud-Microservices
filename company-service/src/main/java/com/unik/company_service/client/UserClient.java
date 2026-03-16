@@ -16,7 +16,7 @@ public class UserClient {
     public boolean existsActiveUser(Long userId) {
         try {
             webClient.get()
-                    .uri("/users/exists/{id}", userId)
+                    .uri("/exists/{id}", userId)
                     .retrieve()
                     .toBodilessEntity()
                     .block();
@@ -29,7 +29,7 @@ public class UserClient {
     public String getUserNameOrNull(Long userId) {
         try {
             return webClient.get()
-                    .uri("/users/{id}/name", userId)
+                    .uri("/{id}/name", userId)
                     .retrieve()
                     .bodyToMono(String.class)
                     .block();

@@ -1,0 +1,56 @@
+server:
+  port: 8080
+
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: user-list
+              uri: lb://user-service
+              predicates:
+                - Path=/user
+              filters:
+                - SetPath=/users
+            - id: company-list
+              uri: lb://company-service
+              predicates:
+                - Path=/company
+              filters:
+                - SetPath=/companies
+            - id: user-description
+              uri: lb://user-service
+              predicates:
+                - Path=/user/description
+              filters:
+                - SetPath=/description
+            - id: company-description
+              uri: lb://company-service
+              predicates:
+                - Path=/company/description
+              filters:
+                - SetPath=/description
+            - id: user-service
+              uri: lb://user-service
+              predicates:
+                - Path=/user/**
+              filters:
+                - RewritePath=/user/?(?<segment>.*), /users/$\{segment}
+            - id: company-service
+              uri: lb://company-service
+              predicates:
+                - Path=/company/**
+              filters:
+                - RewritePath=/company/?(?<segment>.*), /companies/$\{segment}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka/}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway

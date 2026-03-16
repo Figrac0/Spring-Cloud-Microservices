@@ -1,0 +1,8 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Mon Mar 16 14:35:56 SAMT 2026
+netty-codec-native-quic-4.2.10.Final.pom>central=
+netty-codec-native-quic-4.2.10.Final-linux-x86_64.jar>central=
+netty-codec-native-quic-4.2.10.Final-osx-x86_64.jar>central=
+netty-codec-native-quic-4.2.10.Final-windows-x86_64.jar>central=
+netty-codec-native-quic-4.2.10.Final-linux-aarch_64.jar>central=
+netty-codec-native-quic-4.2.10.Final-osx-aarch_64.jar>central=
