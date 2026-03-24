@@ -302,8 +302,6 @@ Run the complete end-to-end scenario:
 powershell -ExecutionPolicy Bypass -File .\demo.ps1
 ```
 
-The file `.lab4-demo-state.json` is generated automatically to store the created entity identifiers between the creation and deletion steps.
-
 ## Expected Result of the Demonstration
 
 After the deletion flow completes:
