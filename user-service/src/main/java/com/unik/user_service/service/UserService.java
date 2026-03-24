@@ -6,7 +6,11 @@ import com.unik.user_service.dto.UserCreateRequest;
 import com.unik.user_service.dto.UserResponse;
 import com.unik.user_service.dto.UserUpdateRequest;
 import com.unik.user_service.error.EntityNotFoundException;
+import com.unik.user_service.messaging.event.CompanyDeletionCompletedEvent;
 import com.unik.user_service.repo.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,13 +18,19 @@ import java.util.List;
 
 @Service
 public class UserService {
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
     private final CompanyClient companyClient;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public UserService(UserRepository userRepository, CompanyClient companyClient) {
+    public UserService(
+            UserRepository userRepository,
+            CompanyClient companyClient,
+            ApplicationEventPublisher eventPublisher) {
         this.userRepository = userRepository;
         this.companyClient = companyClient;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional(readOnly = true)
@@ -86,6 +96,13 @@ public class UserService {
         UserEntity e = userRepository.findByIdAndActiveTrue(id)
                 .orElseThrow(() -> new EntityNotFoundException("Active user with id=" + id + " not found"));
         return e.getName();
+    }
+
+    @Transactional
+    public void detachUsersFromDeletedCompany(Long companyId) {
+        int updatedUsers = userRepository.clearCompanyIdByCompanyId(companyId);
+        log.info("Detached {} users from companyId={}", updatedUsers, companyId);
+        eventPublisher.publishEvent(new CompanyDeletionCompletedEvent(companyId));
     }
 
     private UserResponse toResponseWithCompanyName(UserEntity e) {

@@ -21,6 +21,9 @@ public class CompanyEntity {
     @Column(name = "director_id", nullable = false)
     private Long directorId;
 
+    @Column(nullable = false)
+    private boolean deleted = false;
+
     public Long getId() {
         return id;
     }
@@ -41,6 +44,10 @@ public class CompanyEntity {
         return directorId;
     }
 
+    public boolean isDeleted() {
+        return deleted;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -59,5 +66,9 @@ public class CompanyEntity {
 
     public void setDirectorId(Long directorId) {
         this.directorId = directorId;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 }

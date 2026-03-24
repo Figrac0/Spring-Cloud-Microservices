@@ -30,6 +30,12 @@ public class CompanyController {
         return companyService.create(req);
     }
 
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        companyService.delete(id);
+    }
+
     @GetMapping("/exists/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void exists(@PathVariable Long id) {

@@ -11,3 +11,25 @@
 
 # Logs
 *.log
+
+# Java
+target/
+*.jar
+*.war
+*.ear
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# Logs
+logs/
+*.log
+
+# System
+.DS_Store
+Thumbs.db

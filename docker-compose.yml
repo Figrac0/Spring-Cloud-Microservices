@@ -20,6 +20,35 @@ services:
     networks:
       - microservices-net
 
+  kafka:
+    image: confluentinc/cp-kafka:7.7.0
+    container_name: kafka
+    restart: unless-stopped
+    environment:
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    ports:
+      - "9092:9092"
+    healthcheck:
+      test: ["CMD-SHELL", "cub kafka-ready -b localhost:9092 1 30"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+    networks:
+      - microservices-net
+
   config-server:
     build:
       context: ./config-server
@@ -94,10 +123,13 @@ services:
       DB_USERNAME: unik
       DB_PASSWORD: unik
       COMPANY_SERVICE_BASE_URL: http://api-gateway:8080/company
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     ports:
       - "8081:8081"
     depends_on:
       postgres:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
       config-server:
         condition: service_healthy
@@ -120,10 +152,13 @@ services:
       DB_USERNAME: unik
       DB_PASSWORD: unik
       USER_SERVICE_BASE_URL: http://api-gateway:8080/user
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     ports:
       - "8082:8082"
     depends_on:
       postgres:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
       config-server:
         condition: service_healthy
