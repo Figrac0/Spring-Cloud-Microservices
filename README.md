@@ -25,6 +25,19 @@ The implementation combines five architectural concerns into one coherent platfo
 - event-driven consistency through Kafka
 - authentication and authorization through Spring Security and JWT
 
+<div align="center">
+  
+| 1 |
+| :---: |
+| <img src="https://github.com/Figrac0/Spring-Cloud-Microservices/blob/Distributed-Microservices-Platform/.vscode/1.png" width="700"/> |
+
+
+| 2 |
+| :---: |
+| <img src="https://github.com/Figrac0/Spring-Cloud-Microservices/blob/Distributed-Microservices-Platform/.vscode/2.png" width="700"/> |
+
+</div>
+
 ## System Architecture
 
 ```text
