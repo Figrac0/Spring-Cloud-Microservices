@@ -2,6 +2,10 @@ package com.unik.user_service.domain;
 
 import jakarta.persistence.*;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Entity
 @Table(name = "users")
 public class UserEntity {
@@ -26,6 +30,9 @@ public class UserEntity {
 
     @Column(name = "company_id")
     private Long companyId;
+
+    @Column(nullable = false)
+    private String roles = UserRole.USER.name();
 
     public Long getId() {
         return id;
@@ -55,6 +62,18 @@ public class UserEntity {
         return companyId;
     }
 
+    public String getRoles() {
+        return roles;
+    }
+
+    public List<String> getRoleList() {
+        return Arrays.stream(roles.split(","))
+                .map(String::trim)
+                .filter(role -> !role.isBlank())
+                .distinct()
+                .toList();
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -81,5 +100,17 @@ public class UserEntity {
 
     public void setCompanyId(Long companyId) {
         this.companyId = companyId;
+    }
+
+    public void setRoles(String roles) {
+        this.roles = roles;
+    }
+
+    public void setRoleList(List<String> roles) {
+        this.roles = roles.stream()
+                .map(String::trim)
+                .filter(role -> !role.isBlank())
+                .distinct()
+                .collect(Collectors.joining(","));
     }
 }

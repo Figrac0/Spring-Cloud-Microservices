@@ -14,3 +14,13 @@ app:
     topics:
       company-deletion-requested: company-deletion-requested
       company-deletion-completed: company-deletion-completed
+
+jwt:
+  secret: UnikMicroservicesJwtSecretKeyForLab5NeedsAtLeastThirtyTwoBytes
+  expiration: 3600000
+
+security:
+  whitelist:
+    - /auth/**
+    - /eureka/**
+    - /actuator/**

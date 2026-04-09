@@ -1,0 +1,64 @@
+{
+    "startup":  {
+                    "configServerHealth":  "UP",
+                    "discoveryHealth":  "UP",
+                    "gatewayHealth":  "UP",
+                    "userServiceHealth":  "UP",
+                    "companyServiceHealth":  "UP"
+                },
+    "configServer":  {
+                         "jwtSecretPresent":  true,
+                         "jwtExpiration":  3600000,
+                         "whitelist":  [
+                                           "/auth/**",
+                                           "/eureka/**",
+                                           "/actuator/**"
+                                       ],
+                         "authRoutePresent":  true
+                     },
+    "authentication":  {
+                           "adminLoginStatus":  200,
+                           "adminRoles":  [
+                                              "ADMIN",
+                                              "USER"
+                                          ],
+                           "registerStatus":  201,
+                           "userLoginStatus":  200,
+                           "userRoles":  [
+                                             "USER"
+                                         ],
+                           "userJwtPayloadUsername":  "lab5user20260409134303",
+                           "userJwtPayloadRoles":  [
+                                                       "USER"
+                                                   ],
+                           "userJwtPayloadExp":  1775731384
+                       },
+    "gatewayAuthChecks":  {
+                              "noTokenStatus":  401,
+                              "invalidTokenStatus":  401
+                          },
+    "serviceProtection":  {
+                              "directUserNoAuthStatus":  401,
+                              "directCompanyNoAuthStatus":  401
+                          },
+    "authorization":  {
+                          "userReadUsersStatus":  200,
+                          "userReadCompaniesStatus":  200,
+                          "userReadUserDescriptionStatus":  200,
+                          "userReadCompanyDescriptionStatus":  200,
+                          "userCreateUserForbiddenStatus":  403,
+                          "userDeleteCompanyForbiddenStatus":  403,
+                          "adminCreateCompanyStatus":  201,
+                          "adminCreateUserStatus":  201,
+                          "adminDeleteCompanyStatus":  204
+                      },
+    "asyncDeletion":  {
+                          "deletedCompanyExistsStatus":  404,
+                          "employeeCompanyIdAfterDelete":  null
+                      },
+    "createdEntities":  {
+                            "regularUserLogin":  "lab5user20260409134303",
+                            "companyId":  17,
+                            "employeeLogin":  "lab5employee20260409134303"
+                        }
+}

@@ -1,5 +1,7 @@
 package com.unik.user_service.dto;
 
+import java.util.List;
+
 public class UserResponse {
     private Long id;
     private String name;
@@ -8,9 +10,10 @@ public class UserResponse {
     private boolean active;
     private Long companyId;
     private String companyName;
+    private List<String> roles;
 
     public UserResponse(Long id, String name, String login, String email, boolean active, Long companyId,
-            String companyName) {
+            String companyName, List<String> roles) {
         this.id = id;
         this.name = name;
         this.login = login;
@@ -18,6 +21,7 @@ public class UserResponse {
         this.active = active;
         this.companyId = companyId;
         this.companyName = companyName;
+        this.roles = roles;
     }
 
     public Long getId() {
@@ -46,5 +50,9 @@ public class UserResponse {
 
     public String getCompanyName() {
         return companyName;
+    }
+
+    public List<String> getRoles() {
+        return roles;
     }
 }

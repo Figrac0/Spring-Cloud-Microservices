@@ -1,43 +1,42 @@
 package com.unik.user_service.client;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
+import feign.FeignException;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
-@Component
-public class CompanyClient {
-    private final WebClient webClient;
+@FeignClient(
+        name = "company-service-client",
+        url = "${external.company-service.base-url}",
+        configuration = FeignSecurityConfiguration.class)
+public interface CompanyClient {
 
-    public CompanyClient(@Value("${external.company-service.base-url}") String baseUrl) {
-        this.webClient = WebClient.builder().baseUrl(baseUrl).build();
-    }
+    @GetMapping("/exists/{id}")
+    ResponseEntity<Void> assertExists(@PathVariable("id") Long id);
 
-    public boolean existsCompany(Long companyId) {
-        if (companyId == null)
+    @GetMapping("/{id}/name")
+    String getCompanyName(@PathVariable("id") Long id);
+
+    default boolean existsCompany(Long companyId) {
+        if (companyId == null) {
             return true;
+        }
         try {
-            webClient.get()
-                    .uri("/exists/{id}", companyId)
-                    .retrieve()
-                    .toBodilessEntity()
-                    .block();
+            assertExists(companyId);
             return true;
-        } catch (WebClientResponseException.NotFound ex) {
+        } catch (FeignException.NotFound ex) {
             return false;
         }
     }
 
-    public String getCompanyNameOrNull(Long companyId) {
-        if (companyId == null)
+    default String getCompanyNameOrNull(Long companyId) {
+        if (companyId == null) {
             return null;
+        }
         try {
-            return webClient.get()
-                    .uri("/{id}/name", companyId)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
-        } catch (WebClientResponseException.NotFound ex) {
+            return getCompanyName(companyId);
+        } catch (FeignException.NotFound ex) {
             return null;
         }
     }

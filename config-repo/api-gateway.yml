@@ -7,6 +7,12 @@ spring:
       server:
         webflux:
           routes:
+            - id: auth-service
+              uri: lb://user-service
+              predicates:
+                - Path=/auth/**
+              filters:
+                - RewritePath=/auth/?(?<segment>.*), /auth/$\{segment}
             - id: user-list
               uri: lb://user-service
               predicates:

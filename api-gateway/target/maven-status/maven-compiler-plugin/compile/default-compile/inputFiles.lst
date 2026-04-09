@@ -1,1 +1,7 @@
 D:\Уник\microservices\Spring_Cloud_Config_Server_1\api-gateway\src\main\java\com\unik\api_gateway\ApiGatewayApplication.java
+D:\Уник\microservices\Spring_Cloud_Config_Server_1\api-gateway\src\main\java\com\unik\api_gateway\config\SecurityConfiguration.java
+D:\Уник\microservices\Spring_Cloud_Config_Server_1\api-gateway\src\main\java\com\unik\api_gateway\security\JwtAuthenticationGlobalFilter.java
+D:\Уник\microservices\Spring_Cloud_Config_Server_1\api-gateway\src\main\java\com\unik\api_gateway\security\JwtPayload.java
+D:\Уник\microservices\Spring_Cloud_Config_Server_1\api-gateway\src\main\java\com\unik\api_gateway\security\JwtProperties.java
+D:\Уник\microservices\Spring_Cloud_Config_Server_1\api-gateway\src\main\java\com\unik\api_gateway\security\JwtTokenValidator.java
+D:\Уник\microservices\Spring_Cloud_Config_Server_1\api-gateway\src\main\java\com\unik\api_gateway\security\SecurityWhitelistProperties.java

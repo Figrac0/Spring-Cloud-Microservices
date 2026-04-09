@@ -1,39 +1,42 @@
 package com.unik.company_service.client;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
+import feign.FeignException;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
-@Component
-public class UserClient {
-    private final WebClient webClient;
+@FeignClient(
+        name = "user-service-client",
+        url = "${external.user-service.base-url}",
+        configuration = FeignSecurityConfiguration.class)
+public interface UserClient {
 
-    public UserClient(@Value("${external.user-service.base-url}") String baseUrl) {
-        this.webClient = WebClient.builder().baseUrl(baseUrl).build();
-    }
+    @GetMapping("/exists/{id}")
+    ResponseEntity<Void> assertExistsActive(@PathVariable("id") Long id);
 
-    public boolean existsActiveUser(Long userId) {
+    @GetMapping("/{id}/name")
+    String getUserName(@PathVariable("id") Long id);
+
+    default boolean existsActiveUser(Long userId) {
+        if (userId == null) {
+            return false;
+        }
         try {
-            webClient.get()
-                    .uri("/exists/{id}", userId)
-                    .retrieve()
-                    .toBodilessEntity()
-                    .block();
+            assertExistsActive(userId);
             return true;
-        } catch (WebClientResponseException.NotFound ex) {
+        } catch (FeignException.NotFound ex) {
             return false;
         }
     }
 
-    public String getUserNameOrNull(Long userId) {
+    default String getUserNameOrNull(Long userId) {
+        if (userId == null) {
+            return null;
+        }
         try {
-            return webClient.get()
-                    .uri("/{id}/name", userId)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
-        } catch (WebClientResponseException.NotFound ex) {
+            return getUserName(userId);
+        } catch (FeignException.NotFound ex) {
             return null;
         }
     }

@@ -3,6 +3,9 @@ package com.unik.user_service.error;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -11,28 +14,36 @@ import java.time.OffsetDateTime;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ErrorResponse> handleConflict(ConflictException ex, HttpServletRequest req) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), req);
+    }
+
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(EntityNotFoundException ex, HttpServletRequest req) {
-        HttpStatus status = HttpStatus.NOT_FOUND;
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), req);
+    }
 
-        ErrorResponse body = new ErrorResponse(
-                status.value(),
-                status.getReasonPhrase(),
-                ex.getMessage(),
-                req.getRequestURI(),
-                OffsetDateTime.now());
+    @ExceptionHandler({ BadCredentialsException.class, AuthenticationException.class })
+    public ResponseEntity<ErrorResponse> handleUnauthorized(Exception ex, HttpServletRequest req) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), req);
+    }
 
-        return ResponseEntity.status(status).body(body);
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleForbidden(AccessDeniedException ex, HttpServletRequest req) {
+        return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage(), req);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleAny(Exception ex, HttpServletRequest req) {
-        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), req);
+    }
 
+    private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String message, HttpServletRequest req) {
         ErrorResponse body = new ErrorResponse(
                 status.value(),
                 status.getReasonPhrase(),
-                ex.getMessage(),
+                message,
                 req.getRequestURI(),
                 OffsetDateTime.now());
 

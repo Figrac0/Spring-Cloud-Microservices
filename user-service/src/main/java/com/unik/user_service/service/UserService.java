@@ -2,15 +2,19 @@ package com.unik.user_service.service;
 
 import com.unik.user_service.client.CompanyClient;
 import com.unik.user_service.domain.UserEntity;
+import com.unik.user_service.domain.UserRole;
+import com.unik.user_service.dto.AuthRegisterRequest;
 import com.unik.user_service.dto.UserCreateRequest;
 import com.unik.user_service.dto.UserResponse;
 import com.unik.user_service.dto.UserUpdateRequest;
+import com.unik.user_service.error.ConflictException;
 import com.unik.user_service.error.EntityNotFoundException;
 import com.unik.user_service.messaging.event.CompanyDeletionCompletedEvent;
 import com.unik.user_service.repo.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,14 +27,17 @@ public class UserService {
     private final UserRepository userRepository;
     private final CompanyClient companyClient;
     private final ApplicationEventPublisher eventPublisher;
+    private final PasswordEncoder passwordEncoder;
 
     public UserService(
             UserRepository userRepository,
             CompanyClient companyClient,
-            ApplicationEventPublisher eventPublisher) {
+            ApplicationEventPublisher eventPublisher,
+            PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.companyClient = companyClient;
         this.eventPublisher = eventPublisher;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional(readOnly = true)
@@ -42,6 +49,9 @@ public class UserService {
 
     @Transactional
     public UserResponse create(UserCreateRequest req) {
+        validateLoginAvailable(req.getLogin(), null);
+        validateEmailAvailable(req.getEmail(), null);
+
         if (req.getCompanyId() != null && !companyClient.existsCompany(req.getCompanyId())) {
             throw new EntityNotFoundException("Company with id=" + req.getCompanyId() + " not found");
         }
@@ -49,10 +59,11 @@ public class UserService {
         UserEntity e = new UserEntity();
         e.setName(req.getName());
         e.setLogin(req.getLogin());
-        e.setPassword(req.getPassword());
+        e.setPassword(passwordEncoder.encode(req.getPassword()));
         e.setEmail(req.getEmail());
         e.setCompanyId(req.getCompanyId());
         e.setActive(true);
+        e.setRoleList(List.of(UserRole.USER.name()));
 
         UserEntity saved = userRepository.save(e);
         return toResponseWithCompanyName(saved);
@@ -63,6 +74,8 @@ public class UserService {
         UserEntity e = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User with id=" + id + " not found"));
 
+        validateEmailAvailable(req.getEmail(), id);
+
         if (req.getCompanyId() != null && !companyClient.existsCompany(req.getCompanyId())) {
             throw new EntityNotFoundException("Company with id=" + req.getCompanyId() + " not found");
         }
@@ -70,6 +83,24 @@ public class UserService {
         e.setName(req.getName());
         e.setEmail(req.getEmail());
         e.setCompanyId(req.getCompanyId());
+
+        UserEntity saved = userRepository.save(e);
+        return toResponseWithCompanyName(saved);
+    }
+
+    @Transactional
+    public UserResponse register(AuthRegisterRequest req) {
+        validateLoginAvailable(req.getLogin(), null);
+        validateEmailAvailable(req.getEmail(), null);
+
+        UserEntity e = new UserEntity();
+        e.setName(req.getName());
+        e.setLogin(req.getLogin());
+        e.setPassword(passwordEncoder.encode(req.getPassword()));
+        e.setEmail(req.getEmail());
+        e.setCompanyId(null);
+        e.setActive(true);
+        e.setRoleList(List.of(UserRole.USER.name()));
 
         UserEntity saved = userRepository.save(e);
         return toResponseWithCompanyName(saved);
@@ -114,6 +145,25 @@ public class UserService {
                 e.getEmail(),
                 e.isActive(),
                 e.getCompanyId(),
-                companyName);
+                companyName,
+                e.getRoleList());
+    }
+
+    private void validateLoginAvailable(String login, Long currentUserId) {
+        boolean exists = currentUserId == null
+                ? userRepository.existsByLogin(login)
+                : userRepository.existsByLoginAndIdNot(login, currentUserId);
+        if (exists) {
+            throw new ConflictException("User with login=" + login + " already exists");
+        }
+    }
+
+    private void validateEmailAvailable(String email, Long currentUserId) {
+        boolean exists = currentUserId == null
+                ? userRepository.existsByEmail(email)
+                : userRepository.existsByEmailAndIdNot(email, currentUserId);
+        if (exists) {
+            throw new ConflictException("User with email=" + email + " already exists");
+        }
     }
 }

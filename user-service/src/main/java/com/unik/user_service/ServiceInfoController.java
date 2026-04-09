@@ -2,6 +2,7 @@ package com.unik.user_service;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,6 +17,7 @@ public class ServiceInfoController {
     private String description;
 
     @GetMapping("/description")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public String description() {
         return description;
     }
