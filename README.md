@@ -34,7 +34,7 @@ The implementation combines five architectural concerns into one coherent platfo
 
 | 2 |
 | :---: |
-| <img src="https://github.com/Figrac0/Spring-Cloud-Microservices/blob/Distributed-Microservices-Platform/.vscode/2.png" width="700"/> |
+| <img src="https://github.com/Figrac0/Spring-Cloud-Microservices/blob/Distributed-Microservices-Platform/.vscode/2.png" width="400"/> |
 
 </div>
 
